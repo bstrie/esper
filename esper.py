@@ -37,6 +37,23 @@ class Processor:
         raise NotImplementedError
 
 
+class Entity(int):
+    def get(self, component_type: _Type[_C]) -> _C:
+        return world.component_for_entity(self, component_type)
+
+    def get_all(self) -> _Tuple[_C, ...]:
+        return world.components_for_entity(self)
+
+    def has(self, *component_types: _Type[_C]) -> bool:
+        return world.has_components(self, *component_types)
+
+    def add(self, component_instance: _C) -> None:
+        world.add_component(self, component_instance)
+
+    def remove(self, component_type: _Type[_C]) -> int:
+        return world.remove_component(self, component_type)
+
+
 class World:
     """A World object keeps track of all Entities, Components, and Processors.
 
@@ -46,7 +63,7 @@ class World:
     """
     def __init__(self, timed=False):
         self._processors = []
-        self._next_entity_id = 0
+        self._next_entity_id = Entity(0)
         self._components = {}
         self._entities = {}
         self._dead_entities = set()
@@ -60,7 +77,7 @@ class World:
 
     def clear_database(self) -> None:
         """Remove all Entities and Components from the World."""
-        self._next_entity_id = 0
+        self._next_entity_id = Entity(0)
         self._dead_entities.clear()
         self._components.clear()
         self._entities.clear()
@@ -378,3 +395,8 @@ class World:
         """
         self._clear_dead_entities()
         self._process(*args, **kwargs)
+
+
+world = World()
+
+
